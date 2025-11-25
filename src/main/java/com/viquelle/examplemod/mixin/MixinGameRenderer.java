@@ -22,12 +22,12 @@ public abstract class MixinGameRenderer {
     @Shadow public abstract LightTexture lightTexture();
 
     @Inject(method = "renderLevel", at = @At(value = "HEAD"))
-    private void onRenderLevel(DeltaTracker deltaTracker, CallbackInfo ci) {
+    private void onRenderLevel(DeltaTracker deltaTracker, CallbackInfo ci){
         final LightMapAccess lightMapAccess = (LightMapAccess) lightTexture;
-        Minecraft mc = Minecraft.getInstance();
         if (lightMapAccess.isDirty()) {
             minecraft.getProfiler().push("lightTex");
-            Darkness.updateLuminance(mc);
+            Darkness.updateLuminance(minecraft, (GameRenderer) (Object) this, deltaTracker.getGameTimeDeltaTicks(), lightMapAccess.prevFlicker());
+            minecraft.getProfiler().pop();
         }
     }
 }

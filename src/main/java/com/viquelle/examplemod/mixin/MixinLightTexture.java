@@ -1,6 +1,7 @@
 package com.viquelle.examplemod.mixin;
 
 import com.viquelle.examplemod.LightMapAccess;
+import com.viquelle.examplemod.TextureAccess;
 import net.minecraft.client.DeltaTracker;
 import net.minecraft.client.Minecraft;
 import net.minecraft.client.renderer.GameRenderer;
@@ -22,6 +23,10 @@ public class MixinLightTexture implements LightMapAccess {
     @Shadow
     private float blockLightRedFlicker;
 
+    @Inject(method = "<init>", at = @At(value = "RETURN"))
+    private void afterInit(GameRenderer renderer, Minecraft minecraft, CallbackInfo ci) {
+        ((TextureAccess) lightTexture).enableUploadHook();
+    }
     @Override
     public boolean isDirty() {
         return updateLightTexture;
@@ -31,4 +36,5 @@ public class MixinLightTexture implements LightMapAccess {
     public float prevFlicker() {
         return blockLightRedFlicker;
     }
+
 }

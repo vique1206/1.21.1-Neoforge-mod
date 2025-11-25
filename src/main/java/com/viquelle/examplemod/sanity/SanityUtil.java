@@ -10,35 +10,35 @@ import net.neoforged.neoforge.network.PacketDistributor;
 
 public class SanityUtil {
     public static float getSanity(Player player) {
-        ExampleMod.LOGGER.debug("[SANITY UTIL] Getting sanity for player {}", player.getName().toString());
+//        ExampleMod.LOGGER.debug("[SANITY UTIL] Getting sanity for player {}", player.getName().toString());
         SanityData sanity = player.getData(ModDataAttachments.SANITY);
         if (sanity == null) {
-            ExampleMod.LOGGER.error("[SANITY UTIL] Capability is null for player {}", player.getName().toString());
+//            ExampleMod.LOGGER.error("[SANITY UTIL] Capability is null for player {}", player.getName().toString());
         }
 
-        ExampleMod.LOGGER.debug("[SANITY UTIL] Returning sanity value: {}", sanity.getSanity());
+//        ExampleMod.LOGGER.debug("[SANITY UTIL] Returning sanity value: {}", sanity.getSanity());
         return sanity.getSanity();
     }
 
     public static void set(Player player, float value) {
-        ExampleMod.LOGGER.info("[SanityUtil] Setting sanity for player: {} to value: {}", player.getName().getString(), value); // Используем info для set
+//        ExampleMod.LOGGER.info("[SanityUtil] Setting sanity for player: {} to value: {}", player.getName().getString(), value); // Используем info для set
         SanityData data = player.getData(ModDataAttachments.SANITY);
         if (data == null) {
-            ExampleMod.LOGGER.error("[SanityUtil] Capability is null for player: {} during set operation!", player.getName().getString());
+//            ExampleMod.LOGGER.error("[SanityUtil] Capability is null for player: {} during set operation!", player.getName().getString());
             return; // Выходим, если capability не найдена
         }
         float oldValue = data.getSanity(); // Логируем старое значение
-        ExampleMod.LOGGER.debug("[SanityUtil] Old sanity value: {}", oldValue);
+//        ExampleMod.LOGGER.debug("[SanityUtil] Old sanity value: {}", oldValue);
         data.setSanity(value);
         player.setData(ModDataAttachments.SANITY, data);
         float newValue = data.getSanity(); // Логируем новое значение после set
-        ExampleMod.LOGGER.debug("[SanityUtil] New sanity value after set: {}", newValue);
+//        ExampleMod.LOGGER.debug("[SanityUtil] New sanity value after set: {}", newValue);
 
         if (player instanceof ServerPlayer serverPlayer) {
-            ExampleMod.LOGGER.debug("[SanityUtil] Sending sync packet for player: {}", serverPlayer.getName().getString());
+//            ExampleMod.LOGGER.debug("[SanityUtil] Sending sync packet for player: {}", serverPlayer.getName().getString());
             PacketDistributor.sendToPlayer(serverPlayer, new SanityPayload(newValue));
         } else {
-            ExampleMod.LOGGER.warn("[SanityUtil] Player is not a ServerPlayer, cannot send packet. Player: {}", player.getName().getString());
+//            ExampleMod.LOGGER.warn("[SanityUtil] Player is not a ServerPlayer, cannot send packet. Player: {}", player.getName().getString());
         }
     }
 
