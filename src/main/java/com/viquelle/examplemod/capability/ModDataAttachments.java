@@ -2,6 +2,7 @@ package com.viquelle.examplemod.capability;
 
 import com.mojang.serialization.Codec;
 import com.viquelle.examplemod.ExampleMod;
+import com.viquelle.examplemod.data.Flashlight;
 import net.minecraft.core.component.DataComponentType;
 import net.minecraft.core.registries.Registries;
 import net.neoforged.neoforge.attachment.AttachmentType;
@@ -18,5 +19,10 @@ public class ModDataAttachments {
     public static final Supplier<AttachmentType<SanityData>> SANITY =
             ATTACHMENT_TYPES.register("sanity_data", () ->
                     AttachmentType.builder(() -> SanityData.DEFAULT).serialize(SanityData.CODEC)
+                            .build());
+
+    public static final Supplier<AttachmentType<Flashlight>> FLASHLIGHT =
+            ATTACHMENT_TYPES.register("flashlight_data", () ->
+                    AttachmentType.builder(() -> Flashlight.DEFAULT).serialize(Flashlight.CODEC)
                             .build());
 }
