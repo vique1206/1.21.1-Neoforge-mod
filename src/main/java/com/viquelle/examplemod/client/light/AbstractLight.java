@@ -2,25 +2,60 @@ package com.viquelle.examplemod.client.light;
 
 import foundry.veil.api.client.render.light.data.LightData;
 import foundry.veil.api.client.render.light.renderer.LightRenderHandle;
+import net.minecraft.world.entity.player.Player;
+import net.minecraft.world.phys.Vec3;
+import org.jetbrains.annotations.ApiStatus;
+import org.jetbrains.annotations.NotNull;
 
-import java.util.HashMap;
-import java.util.Map;
-
-public abstract class AbstractLight<T extends LightData> implements IPlayerLight{
+public abstract class AbstractLight<T extends LightData> implements IAbstractLight{
+    protected int color;
+    protected float brightness;
     protected boolean active = false;
+    protected boolean isDirty = false;
 
-    protected int color = 0xFFFFFF;
-    protected float currentIntensivity;
-    protected float targetIntensivity;
-
-    protected LightRenderHandle<T> handle;
-    protected T light;
-    private Map<String, CurveSegment> curves = new HashMap<>();
-
-    protected void bob() {
-        curves.
+    protected AbstractLight(Builder builder) {
+        this.isDirty = true;
+        this.active = true;
+        this.color = builder.color;
+        this.brightness = builder.brightness;
     }
 
+    protected static abstract class Builder {
+        private int color = 0xFFFFFF;
+        private float brightness = 1.0f;
+        private Player player;
+        private LightData d;
+        public Builder setColor(int color) {
+            this.color = color;
+            return this;
+        }
+
+        public Builder setBrightness(float brightness) {
+            this.brightness = brightness;
+            return this;
+        }
+
+        public Builder setPlayer(Player player) {
+            this.player = player;
+            return this;
+        }
+
+        @ApiStatus.OverrideOnly
+        public AbstractLight<?> build() {return null;}
+    }
+//    protected Map<String, List<CurveSegment>> curves = new HashMap<>();
+//    protected int currentCurve = -1;
+//    protected void applyCurve() {
+//    }
+//    protected static class CurveSegment {
+//        protected int currentTick = 0;
+//        protected int duration;
+//        protected LightCurve curve = LightCurve.LINEAR;
+//
+//        protected void applyCurve() {
+//
+//        }
+//    }
 //    protected float lerp(float a, float b, float t) {
 //        return a + (b - a) * t;
 //    }
