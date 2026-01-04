@@ -24,17 +24,10 @@ public class FlashlightItem extends AbstractLightItem {
     public InteractionResultHolder<ItemStack> use(Level level, Player player, InteractionHand hand){
         ItemStack stack = player.getItemInHand(hand);
 
-        boolean enabled = isEnabled(stack);
-        toggle(stack);
-        enabled = !enabled;
         if (level.isClientSide) {
-            ExampleMod.LOGGER.info("{}",getCooldown(stack));
-            if (getCooldown(stack) > 0) {
-                return InteractionResultHolder.pass(stack);
-            }
-
-            ExampleMod.LOGGER.info("[CLIENT] {}", enabled);
-
+            if (getCooldown(stack) > 0) { return InteractionResultHolder.pass(stack); }
+            boolean enabled = !isEnabled(stack);
+            toggle(stack);
             UUID id = player.getUUID();
             AbstractLight<?> light = ClientLightManager.getLight(id);
 
@@ -54,17 +47,11 @@ public class FlashlightItem extends AbstractLightItem {
                     light.brightness = 0f;
                 }
             }
-
             setCooldown(stack, 10);
-            ExampleMod.LOGGER.info("{}",getCooldown(stack));
+            player.displayClientMessage(Component.literal(enabled ? "ON" : "OFF"), true);
         } else {
-            boolean nowEnabled = isEnabled(stack);
-            ExampleMod.LOGGER.info("[SERVER] {}",nowEnabled);
-            player.displayClientMessage(
-                    Component.literal(nowEnabled ? "ON" : "OFF"),
-                    true
-            );
+            //
         }
-        return InteractionResultHolder.sidedSuccess(stack, level.isClientSide());
+        return InteractionResultHolder.pass(stack); // мне просто не нрав анимация
     }
 }
