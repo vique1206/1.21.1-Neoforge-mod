@@ -58,7 +58,7 @@ public class PointLight extends AbstractLight<PointLightData>{
 
     @Override
     public void tick(float partialTick) {
-        if (isDirty && registered) {
+        if (registered) {
             super.tick(partialTick, handle);
 
             if (pos != lastPos) {
@@ -81,8 +81,8 @@ public class PointLight extends AbstractLight<PointLightData>{
     @Override
     public void register() {
         PointLightData light = new PointLightData();
-        light.setBrightness(lastBrightness)
-                .setColor(lastColor)
+        light.setBrightness(brightness)
+                .setColor(color)
                 .setRadius(6f)
                 .setPosition((Vector3dc) lastPos);
 
