@@ -1,20 +1,30 @@
 package com.viquelle.examplemod.client.light;
 
 import foundry.veil.api.client.render.VeilRenderSystem;
+import foundry.veil.api.client.render.light.data.AreaLightData;
 import foundry.veil.api.client.render.light.data.PointLightData;
+import foundry.veil.api.client.render.light.renderer.LightRenderHandle;
 import net.minecraft.client.player.LocalPlayer;
 import net.minecraft.world.entity.player.Player;
 import net.minecraft.world.phys.Vec3;
 import org.jetbrains.annotations.NotNull;
+import org.joml.Vector3dc;
 
 public class PointLight extends AbstractLight<PointLightData>{
-    protected Vec3 pos;
+    private Vec3 pos;
+    public Vec3 lastPos;
+
     protected PointLight(Builder builder) {
         super(builder);
-        this.pos = builder.pos;
+        this.lastPos = builder.pos;
     }
 
-    public static class Builder extends AbstractLight.Builder {
+    protected void syncPos(LightRenderHandle<PointLightData> handle){
+        this.pos = lastPos;
+        handle.getLightData().setPosition((Vector3dc) pos);
+    }
+
+    public static class Builder extends AbstractLight.Builder<PointLight.Builder> {
         private Vec3 pos;
 
         public PointLight.Builder setPosition(Vec3 pos) {
@@ -48,12 +58,40 @@ public class PointLight extends AbstractLight<PointLightData>{
 
     @Override
     public void tick(float partialTick) {
+        if (isDirty && registered) {
+            super.tick(partialTick, handle);
 
+            if (pos != lastPos) {
+                syncPos(handle);
+            }
+            isDirty = false;
+        }
     }
+
+    //    @Override
+//    public void tick(float partialTick) {
+//        super.tick(partialTick);
+//        AreaLightData light = handle.getLightData();
+//        light.getOrientation().set(orientation);
+//        light.getPosition().set((Vector3dc) pos);
+//        light.setBrightness(lastBrightness);
+//        light.setColor(lastColor);
+//    }
 
     @Override
-    public void remove() {
+    public void register() {
+        PointLightData light = new PointLightData();
+        light.setBrightness(lastBrightness)
+                .setColor(lastColor)
+                .setRadius(6f)
+                .setPosition((Vector3dc) lastPos);
 
+        handle = VeilRenderSystem.renderer()
+                .getLightRenderer()
+                .addLight(light);
+
+        registered = true;
     }
+
 
 }

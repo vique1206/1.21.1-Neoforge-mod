@@ -1,48 +1,83 @@
 package com.viquelle.examplemod.client.light;
 
+import foundry.veil.api.client.render.VeilRenderSystem;
+import foundry.veil.api.client.render.light.data.AreaLightData;
 import foundry.veil.api.client.render.light.data.LightData;
 import foundry.veil.api.client.render.light.renderer.LightRenderHandle;
 import net.minecraft.world.entity.player.Player;
-import net.minecraft.world.phys.Vec3;
 import org.jetbrains.annotations.ApiStatus;
-import org.jetbrains.annotations.NotNull;
 
 public abstract class AbstractLight<T extends LightData> implements IAbstractLight{
-    protected int color;
-    protected float brightness;
-    protected boolean active = false;
+    private int color;
+    private float brightness;
+
+    public float lastBrightness = -1f;
+    public int lastColor = -1;
+
+    private Player player;
+    protected boolean registered = false; // need for known inited in Veil or doesn't
+    protected LightRenderHandle<T> handle = null;
     protected boolean isDirty = false;
 
     protected AbstractLight(Builder builder) {
         this.isDirty = true;
-        this.active = true;
-        this.color = builder.color;
-        this.brightness = builder.brightness;
+        this.registered = true;
+        this.lastColor = builder.color;
+        this.lastBrightness = builder.brightness;
+        this.player = builder.player;
     }
 
-    protected static abstract class Builder {
+    protected static class Builder<B extends Builder<B>> {
         private int color = 0xFFFFFF;
         private float brightness = 1.0f;
         private Player player;
-        private LightData d;
-        public Builder setColor(int color) {
+
+        @SuppressWarnings("unchecked")
+        public B setColor(int color) {
             this.color = color;
-            return this;
+            return (B) this;
         }
 
-        public Builder setBrightness(float brightness) {
+        @SuppressWarnings("unchecked")
+        public B setBrightness(float brightness) {
             this.brightness = brightness;
-            return this;
+            return (B) this;
         }
 
-        public Builder setPlayer(Player player) {
+        @SuppressWarnings("unchecked")
+        public B setPlayer(Player player) {
             this.player = player;
-            return this;
+            return (B) this;
         }
 
         @ApiStatus.OverrideOnly
         public AbstractLight<?> build() {return null;}
+
     }
+
+    public void syncBrightness(LightRenderHandle<?> handle) {
+        brightness = lastBrightness;
+        handle.getLightData().setBrightness(brightness);
+    }
+
+    public void syncColor(LightRenderHandle<?> handle){
+        color = lastColor;
+        handle.getLightData().setColor(color);
+    }
+
+    public void tick(float pT, LightRenderHandle<?> handle) {
+        if (!registered || !isDirty) return;
+
+        if (lastBrightness != brightness) syncBrightness(handle);
+        if (lastColor != color) syncColor(handle);
+        isDirty = false;
+    }
+
+    public void unregister() {
+        handle.free();
+        registered = false;
+    }
+
 //    protected Map<String, List<CurveSegment>> curves = new HashMap<>();
 //    protected int currentCurve = -1;
 //    protected void applyCurve() {

@@ -1,18 +1,37 @@
 package com.viquelle.examplemod.client.light;
 
+import foundry.veil.api.client.render.VeilRenderSystem;
 import foundry.veil.api.client.render.light.data.AreaLightData;
+import foundry.veil.api.client.render.light.data.LightData;
 import net.minecraft.world.phys.Vec3;
+import org.joml.Quaternionf;
+import org.joml.Vector3dc;
 
 public class AreaLight extends AbstractLight<AreaLightData>{
-    protected Vec3 pos;
+    protected Vec3 pos; // EYEPOS
+    protected Quaternionf orientation; // PITCH AND YAW EYES
+    public Vec3 lastPos = null;
+    public Quaternionf lastOrientation = null;
 
     protected AreaLight(Builder builder) {
         super(builder);
-        this.pos = builder.pos;
+        this.lastPos = builder.pos;
+        this.lastOrientation = builder.orientation;
     }
 
-    public static class Builder extends AbstractLight.Builder {
+    public void syncPos() {
+        pos = lastPos;
+        handle.getLightData().getPosition().set((Vector3dc) pos);
+    }
+
+    public void syncOrientation() {
+        orientation = lastOrientation;
+        handle.getLightData().getOrientation().set(orientation);
+    }
+
+    public static class Builder extends AbstractLight.Builder<AreaLight.Builder> {
         private Vec3 pos;
+        private Quaternionf orientation;
 
         public Builder setPosition(Vec3 pos) {
             this.pos = pos;
@@ -24,33 +43,19 @@ public class AreaLight extends AbstractLight<AreaLightData>{
             return this;
         }
 
+        public Builder setOrientation(Quaternionf orientation) {
+            this.orientation = orientation;
+            return this;
+        }
+
         @Override
         public AreaLight build() {
             return new AreaLight(this);
         }
-    }
-//    public IAbstractLight create() {
-//        light = new AreaLightData();
-//        light.setBrightness(0.7f)
-//                .setDistance(32f)
-//                .setAngle(0.6f)
-//                .setSize(0.1f,0.1f)
-//                .setColor(0xFFFFFF);
-//
-//        handle = VeilRenderSystem.renderer()
-//                .getLightRenderer()
-//                .addLight(light);
-//
-//        active = true;
-//    }
 
-    @Override
-    public void tick(float partialTick) {
 
     }
-
-//    @Override
-//    public void update(LocalPlayer player, float partialTick) {
+    //    public void update(LocalPlayer player, float partialTick) {
 //        ExampleMod.LOGGER.info("[TICK] TRYING TO TICK");
 //        if (!active) return;
 //        ExampleMod.LOGGER.info("[TICK] ACTIVE PASSED!");
@@ -70,7 +75,31 @@ public class AreaLight extends AbstractLight<AreaLightData>{
 //    }
 
     @Override
-    public void remove() {
+    public void register() {
+        AreaLightData light = new AreaLightData();
+        light.setBrightness(lastBrightness)
+                .setColor(lastColor)
+                .setDistance(32f)
+                .setAngle(0.6f)
+                .setSize(0.1f,0.1f);
 
+        handle = VeilRenderSystem.renderer()
+                .getLightRenderer()
+                .addLight(light);
+
+        registered = true;
     }
+
+    @Override
+    public void tick(float partialTick) {
+        if (isDirty && registered) {
+            super.tick(partialTick, handle);
+            if (orientation != lastOrientation) syncOrientation();
+            if (pos != lastPos) syncPos();
+
+            isDirty = false;
+        }
+    }
+
+
 }

@@ -50,8 +50,10 @@ public class ExampleModClient {
         if (event.getStage() != RenderLevelStageEvent.Stage.AFTER_SKY) return;
         float pt = event.getPartialTick().getGameTimeDeltaPartialTick(false);
         if (test == null) {
-            test = new AreaLight(mc.player, 0xFFFFFF);
-            test.create();
+            test = new AreaLight.Builder()
+                    .setPosition(mc.player.getEyePosition())
+                    .setPlayer(mc.player)
+                    .build();
         }
         test.tick(pt);
     }
