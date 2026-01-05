@@ -1,5 +1,6 @@
 package com.viquelle.examplemod;
 
+import com.viquelle.examplemod.client.ClientLightManager;
 import com.viquelle.examplemod.client.ClientPayloadHandler;
 import com.viquelle.examplemod.client.HudRenderer;
 import com.viquelle.examplemod.client.light.AreaLight;
@@ -21,8 +22,8 @@ import net.neoforged.neoforge.network.event.RegisterPayloadHandlersEvent;
 // You can use EventBusSubscriber to automatically register all static methods in the class annotated with @SubscribeEvent
 @EventBusSubscriber(modid = ExampleMod.MODID, value = Dist.CLIENT)
 public class ExampleModClient {
-    static boolean lightInit = false;
-    static AreaLight test;
+//    static boolean lightInit = false;
+//    static AreaLight test;
     public ExampleModClient(ModContainer container) {
         // Allows NeoForge to create a config screen for this mod's configs.
         // The config screen is accessed by going to the Mods screen > clicking on your mod > clicking on config.
@@ -45,15 +46,8 @@ public class ExampleModClient {
 
     @SubscribeEvent
     public static void onRender(RenderLevelStageEvent event) {
-        Minecraft mc = Minecraft.getInstance();
-        if (mc.level == null) return;
-        if (event.getStage() != RenderLevelStageEvent.Stage.AFTER_SKY) return;
-        float pt = event.getPartialTick().getGameTimeDeltaPartialTick(false);
-        if (test == null) {
-            test = new AreaLight.Builder().build();
-            test.register();
-        }
-        test.syncWithObj(mc.player, pt);
-        test.tick(pt);
+        ClientLightManager.tick(
+                event.getPartialTick().getGameTimeDeltaPartialTick(false)
+        );
     }
 }

@@ -8,22 +8,15 @@ import net.minecraft.world.entity.player.Player;
 import org.jetbrains.annotations.ApiStatus;
 
 public abstract class AbstractLight<T extends LightData> implements IAbstractLight{
-    private int color;
-    private float brightness;
-
-    public float lastBrightness = -1f;
-    public int lastColor = -1;
-
-    private Player player;
+    public int color;
+    public float brightness;
+    private final Player player;
     protected boolean registered = false; // need for known inited in Veil or doesn't
     protected LightRenderHandle<T> handle = null;
-    protected boolean isDirty = false;
 
     protected AbstractLight(Builder builder) {
-        this.isDirty = true;
-        this.registered = true;
-        this.lastColor = builder.color;
-        this.lastBrightness = builder.brightness;
+        this.color = builder.color;
+        this.brightness = builder.brightness;
         this.player = builder.player;
     }
 
@@ -56,25 +49,28 @@ public abstract class AbstractLight<T extends LightData> implements IAbstractLig
     }
 
     public void syncBrightness(LightRenderHandle<?> handle) {
-        brightness = lastBrightness;
         handle.getLightData().setBrightness(brightness);
     }
 
     public void syncColor(LightRenderHandle<?> handle){
-        color = lastColor;
         handle.getLightData().setColor(color);
     }
 
-    public void tick(float pT, LightRenderHandle<?> handle) {
-        if (!registered || !isDirty) return;
+    protected void tick(float pT, LightRenderHandle<?> handle) {
+        if (!registered || handle == null) return;
 
-        if (lastBrightness != brightness) syncBrightness(handle);
-        if (lastColor != color) syncColor(handle);
-        //isDirty = false;
+        syncBrightness(handle);
+        syncColor(handle);
+    }
+
+    public Player getPlayer() {
+        return this.player;
     }
 
     public void unregister() {
+        if (handle == null) return;
         handle.free();
+        handle = null;
         registered = false;
     }
 

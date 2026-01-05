@@ -1,16 +1,21 @@
 package com.viquelle.examplemod.item;
 
-import com.viquelle.examplemod.item.lightItems.AbstractLightItem;
-import net.minecraft.core.component.DataComponents;
+import com.viquelle.examplemod.ExampleMod;
+import com.viquelle.examplemod.ExampleModClient;
+import com.viquelle.examplemod.client.ClientLightManager;
+import com.viquelle.examplemod.client.light.AbstractLight;
+import com.viquelle.examplemod.client.light.AreaLight;
 import net.minecraft.network.chat.Component;
 import net.minecraft.world.InteractionHand;
 import net.minecraft.world.InteractionResultHolder;
 import net.minecraft.world.entity.player.Player;
 import net.minecraft.world.item.ItemStack;
-import net.minecraft.world.item.component.CustomData;
 import net.minecraft.world.level.Level;
 
+import java.util.UUID;
+
 public class FlashlightItem extends AbstractLightItem {
+
     public FlashlightItem(Properties properties) {
         super(properties);
     }
@@ -19,22 +24,34 @@ public class FlashlightItem extends AbstractLightItem {
     public InteractionResultHolder<ItemStack> use(Level level, Player player, InteractionHand hand){
         ItemStack stack = player.getItemInHand(hand);
 
-        CustomData data = stack.getOrDefault(DataComponents.CUSTOM_DATA, CustomData.EMPTY);
+        if (level.isClientSide) {
+            if (getCooldown(stack) > 0) { return InteractionResultHolder.pass(stack); }
+            boolean enabled = !isEnabled(stack);
+            toggle(stack);
+            UUID id = player.getUUID();
+            AbstractLight<?> light = ClientLightManager.getLight(id);
 
-        var tag = data.copyTag();
-
-        boolean enabled = tag.getBoolean("enabled");
-
-        enabled = !enabled;
-        tag.putBoolean("enabled", enabled);
-
-        stack.set(DataComponents.CUSTOM_DATA, CustomData.of(tag));
-
-        if (!level.isClientSide) {
-            String message = enabled ? "ВКЛ" : "ВЫКЛ";
-            player.displayClientMessage(Component.literal(enabled ? "вкл" : "выкл"), true);
+            if (enabled) {
+                if (light == null) {
+                    light = new AreaLight.Builder()
+                            .setPlayer(player)
+                            .setBrightness(1.0f)
+                            .setColor(0xFFFFFF)
+                            .build();
+                    ClientLightManager.enable(id,light);
+                } else {
+                    light.brightness = 1.0f;
+                }
+            } else {
+                if (light != null) {
+                    light.brightness = 0f;
+                }
+            }
+            setCooldown(stack, 10);
+            player.displayClientMessage(Component.literal(enabled ? "ON" : "OFF"), true);
+        } else {
+            //
         }
-
-        return InteractionResultHolder.sidedSuccess(player.getItemInHand(hand), level.isClientSide());
+        return InteractionResultHolder.pass(stack); // мне просто не нрав анимация
     }
 }
