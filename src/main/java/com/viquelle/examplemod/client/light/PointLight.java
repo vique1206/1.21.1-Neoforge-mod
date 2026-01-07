@@ -26,8 +26,7 @@ public class PointLight extends AbstractLight<PointLightData>{
                 (float) Math.toRadians(p.getYRot()),
                 0.0f
         );
-        Vec3 eyePos = p.getEyePosition(pt);
-        this.pos = eyePos;
+        this.pos = p.getEyePosition(pt);
         handle.getLightData().setPosition(
                 pos.x,
                 pos.y,
